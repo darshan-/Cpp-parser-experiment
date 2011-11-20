@@ -7,13 +7,19 @@
 
 using namespace std;
 
-class BadInput {};
+class BadInput {
+public:
+  string message;
+
+  BadInput(string message = "") : message(message) {}
+};
+
 class Quit     {};
 
 string cur_line;
 unsigned int cur_offset;
 
-enum TokenType {NIL, NUMBER, PLUS='+', MINUS='-', MUL='*', DIV='/'};
+enum TokenType {NIL, NUM, PLUS='+', MINUS='-', MUL='*', DIV='/', LPAREN = '(', RPAREN = ')'};
 
 class Token {
 public:
@@ -64,29 +70,43 @@ Token get_token()
   case '8':
   case '9':
     --cur_offset;
-    t.type = NUMBER;
+    t.type = NUM;
     t.value = get_double();
     break;
   case '+':
   case '-':
   case '*':
   case '/':
+  case '(':
+  case ')':
     t.type = TokenType(c);
     break;
   default:
     if (isspace(c)) return get_token();
-    else throw BadInput();
+
+    --cur_offset;
+    throw BadInput("Bad character");
   }
 
   return t;
 }
 
+double get_expression();
+
 double get_primary()
 {
   Token t = get_token();
-  if (t.type != NUMBER) throw BadInput();
 
-  return t.value;
+  if (t.type == NUM) return t.value;
+
+  if (t.type == LPAREN) {
+    double d = get_expression();
+    t = get_token();
+    if (t.type != RPAREN) throw BadInput("Right parenthesis ')' expected");
+    return d;
+  }
+
+  throw BadInput("Primary expected");
 }
 
 double get_term()
@@ -125,7 +145,8 @@ double get_expression()
       val -= get_term();
       break;
     default:
-      throw BadInput();
+      --cur_offset;
+      return val;
     }
   }
 
@@ -139,18 +160,26 @@ int main()
     try {
       stringbuf sb;
       cin.get(sb);
+      cin.get(); // pop '\n';
       if (cin.eof()) throw Quit();
+
       cur_line = sb.str();
       cur_offset = 0;
-      cout << get_expression() << endl;
+
+      double d = get_expression();
+      if (cur_offset != cur_line.length()) throw BadInput("Junk after complete expression");
+
+      cout << d << endl;
     } catch (BadInput &e) {
-      cout << "Bad input!" << endl;
+      cout << "Error: " << e.message << endl;
+      cout << "~ " << cur_line << endl;
+      cout << "~ ";
+      for (unsigned int i=0; i<cur_offset; ++i) cout << ' ';
+      cout << '^' << endl;
     } catch (Quit &e) {
       cout << endl;
       return 0;
     }
-
-    cin.get(); // pop '\n';
   }
 
   return 0;
