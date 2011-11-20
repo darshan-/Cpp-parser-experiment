@@ -139,7 +139,7 @@ int main()
     try {
       stringbuf sb;
       cin.get(sb);
-      if (cin.eof()) return 0;
+      if (cin.eof()) throw Quit();
       cur_line = sb.str();
       cur_offset = 0;
       cout << get_expression() << endl;
