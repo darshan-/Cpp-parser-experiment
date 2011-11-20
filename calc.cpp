@@ -1,12 +1,17 @@
 // g++ -std=c++0x -Wall calc.cpp && ./a.out
 
-#include <iostream>
 #include <cctype>
+#include <iostream>
+#include <sstream>
+#include <string>
 
 using namespace std;
 
 class BadInput {};
 class Quit     {};
+
+string cur_line;
+unsigned int cur_offset;
 
 enum TokenType {NIL, NUMBER, PLUS='+', MINUS='-', MUL='*', DIV='/'};
 
@@ -21,19 +26,33 @@ public:
   }
 };
 
+double get_double()
+{
+  double d;
+  istringstream iss(cur_line.substr(cur_offset, cur_line.length() - cur_offset));
+  int n = iss.rdbuf()->in_avail();
+  iss >> d;
+  cur_offset += n - iss.rdbuf()->in_avail();
+  return d;
+ }
+
 Token get_token()
 {
   Token t;
-  char c = 0;
-  cin.get(c);
 
-  if (cin.eof()) throw Quit();
+  if (cur_offset >= cur_line.length()) {
+    t.type = NIL;
+    return t;
+  }
+
+  char c = cur_line[cur_offset++];
 
   switch (c) {
   case 0:
   case '\n':
     t.type = NIL;
     break;
+  case '.':
   case '0':
   case '1':
   case '2':
@@ -44,9 +63,9 @@ Token get_token()
   case '7':
   case '8':
   case '9':
-    cin.unget();
+    --cur_offset;
     t.type = NUMBER;
-    cin >> t.value;
+    t.value = get_double();
     break;
   case '+':
   case '-':
@@ -118,13 +137,20 @@ int main()
   while (true) {
     cout << "> ";
     try {
-      cout << get_expression() << endl;;
+      stringbuf sb;
+      cin.get(sb);
+      if (cin.eof()) return 0;
+      cur_line = sb.str();
+      cur_offset = 0;
+      cout << get_expression() << endl;
     } catch (BadInput &e) {
       cout << "Bad input!" << endl;
     } catch (Quit &e) {
       cout << endl;
       return 0;
     }
+
+    cin.get(); // pop '\n';
   }
 
   return 0;
