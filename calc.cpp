@@ -1,6 +1,7 @@
 // g++ -std=c++0x -Wall calc.cpp && ./a.out
 
 #include <cctype>
+#include <cstdio>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -35,12 +36,11 @@ public:
 double get_double()
 {
   double d;
-  istringstream iss(cur_line.substr(cur_offset, cur_line.length() - cur_offset));
-  int n = iss.rdbuf()->in_avail();
-  iss >> d;
-  cur_offset += n - iss.rdbuf()->in_avail();
+  int i;
+  sscanf(cur_line.c_str() + cur_offset, "%lf%n", &d, &i);
+  cur_offset += i;
   return d;
- }
+}
 
 Token get_token()
 {
