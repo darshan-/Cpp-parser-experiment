@@ -93,18 +93,24 @@ double get_primary()
 {
   Token t = get_token();
 
-  if (t.type == NUM) return t.value;
-
-  if (t.type == LPAREN) {
-    double d = get_expression();
-    t = get_token();
-    if (t.type != RPAREN) throw BadInput("Right parenthesis ')' expected");
-    return d;
+  switch (t.type) {
+  case NUM:
+    return t.value;
+  case LPAREN:
+    {
+      double d = get_expression();
+      t = get_token();
+      if (t.type != RPAREN) throw BadInput("Right parenthesis ')' expected");
+      return d;
+    }
+  case PLUS:
+    return get_primary();
+  case MINUS:
+    return - get_primary();
+  default:
+    if (t.type != NIL) --cur_offset;
+    throw BadInput("Primary expected");
   }
-
-  if (t.type != NIL) --cur_offset;
-
-  throw BadInput("Primary expected");
 }
 
 double get_term()
