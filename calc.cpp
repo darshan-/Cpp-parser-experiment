@@ -158,6 +158,10 @@ int main()
   while (true) {
     cout << "> ";
     try {
+      char c = cin.get();
+      if (c == '\n') continue;
+      cin.putback(c);
+
       stringbuf sb;
       cin.get(sb);
       cin.get(); // pop '\n';
