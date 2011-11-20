@@ -91,7 +91,6 @@ double get_primary()
 
 double get_term()
 {
-  return get_primary();
   double val = get_primary();
 
   Token t;
@@ -104,7 +103,8 @@ double get_term()
       val /= get_primary();
       break;
     default:
-      throw BadInput();
+      --cur_offset;
+      return val;
     }
   }
 
