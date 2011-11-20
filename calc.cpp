@@ -1,4 +1,7 @@
+// g++ -std=c++0x -Wall calc.cpp && ./a.out
+
 #include <iostream>
+#include <cctype>
 
 using namespace std;
 
@@ -14,11 +17,11 @@ public:
 
   explicit operator bool()
   {
-    return (type == NIL);
+    return (type != NIL);
   }
 };
 
-Token getToken()
+Token get_token()
 {
   Token t;
   char c = 0;
@@ -26,7 +29,7 @@ Token getToken()
 
   if (cin.eof()) {
     throw Quit();
-  } else if (c == 0) {
+  } else if (c == 0 || c == '\n') {
     t.type = NIL;
   } else if (c >= '0' && c <= '9') {
     cin.unget();
@@ -36,6 +39,8 @@ Token getToken()
     t.type = PLUS;
   } else if (c == '-') {
     t.type = MINUS;
+  } else if (isspace(c)) {
+    return get_token();
   } else {
     throw BadInput();
   }
@@ -43,66 +48,64 @@ Token getToken()
   return t;
 }
 
-double expression()
+void explain(Token t)
 {
-  double first;
-  Token t = getToken();
-
-  if (t.type != NUMBER) throw BadInput();
-  first = t.value;
-
-  while ((t = getToken())) {
-    cout << t.value << endl;
+  switch (t.type) {
+  case NUMBER:
+    cout << "The number " << t.value << endl;
+    break;
+  case PLUS:
+    cout << "PLUS" << endl;
+    break;
+  case MINUS:
+    cout << "MINUS" << endl;
+    break;
+  default:
+    cout << "WTF?" << endl;
   }
-
-  return first;
 }
 
-void ignore_rest_of_line()
+double get_primary()
 {
-  //cin.ignore(numeric_limits<int>::max(), '\n');
-  char c = 0;
-  while (c != '\n') {
-    c = cin.get();
-    if (cin.eof()) {
-      cin.clear();
+  Token t = get_token();
+  if (t.type != NUMBER) throw BadInput();
+
+  return t.value;
+}
+
+double get_expression()
+{
+  double val = get_primary();
+
+  Token t;
+  while ((t = get_token())) {
+    switch (t.type) {
+    case PLUS:
+      val += get_primary();
       break;
+    case MINUS:
+      val -= get_primary();
+      break;
+    default:
+      throw BadInput();
     }
   }
+
+  return val;
 }
 
 int main()
 {
-  Token t;
-
   while (true) {
     cout << "> ";
     try {
-      t = getToken();
+      cout << get_expression() << endl;;
     } catch (BadInput &e) {
       cout << "Bad input!" << endl;
-      goto loop_end;
     } catch (Quit &e) {
       cout << endl;
       return 0;
     }
-
-    switch (t.type) {
-    case NUMBER:
-      cout << "The number " << t.value << endl;
-      break;
-    case PLUS:
-      cout << "PLUS" << endl;
-      break;
-    case MINUS:
-      cout << "MINUS" << endl;
-      break;
-    default:
-      cout << "WTF?" << endl;
-    }
-
-  loop_end:
-    ignore_rest_of_line();
   }
 
   return 0;
