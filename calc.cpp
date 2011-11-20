@@ -54,10 +54,6 @@ Token get_token()
   char c = cur_line[cur_offset++];
 
   switch (c) {
-  case 0:
-  case '\n':
-    t.type = NIL;
-    break;
   case '.':
   case '0':
   case '1':
@@ -105,6 +101,8 @@ double get_primary()
     if (t.type != RPAREN) throw BadInput("Right parenthesis ')' expected");
     return d;
   }
+
+  if (t.type != NIL) --cur_offset;
 
   throw BadInput("Primary expected");
 }
