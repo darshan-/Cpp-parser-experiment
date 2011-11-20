@@ -8,7 +8,7 @@ using namespace std;
 class BadInput {};
 class Quit     {};
 
-enum TokenType {NIL, NUMBER, PLUS, MINUS};
+enum TokenType {NIL, NUMBER, PLUS='+', MINUS='-', MUL='*', DIV='/'};
 
 class Token {
 public:
@@ -27,42 +27,39 @@ Token get_token()
   char c = 0;
   cin.get(c);
 
-  if (cin.eof()) {
-    throw Quit();
-  } else if (c == 0 || c == '\n') {
+  if (cin.eof()) throw Quit();
+
+  switch (c) {
+  case 0:
+  case '\n':
     t.type = NIL;
-  } else if (c >= '0' && c <= '9') {
+    break;
+  case '0':
+  case '1':
+  case '2':
+  case '3':
+  case '4':
+  case '5':
+  case '6':
+  case '7':
+  case '8':
+  case '9':
     cin.unget();
     t.type = NUMBER;
     cin >> t.value;
-  } else if (c == '+') {
-    t.type = PLUS;
-  } else if (c == '-') {
-    t.type = MINUS;
-  } else if (isspace(c)) {
-    return get_token();
-  } else {
-    throw BadInput();
+    break;
+  case '+':
+  case '-':
+  case '*':
+  case '/':
+    t.type = TokenType(c);
+    break;
+  default:
+    if (isspace(c)) return get_token();
+    else throw BadInput();
   }
 
   return t;
-}
-
-void explain(Token t)
-{
-  switch (t.type) {
-  case NUMBER:
-    cout << "The number " << t.value << endl;
-    break;
-  case PLUS:
-    cout << "PLUS" << endl;
-    break;
-  case MINUS:
-    cout << "MINUS" << endl;
-    break;
-  default:
-    cout << "WTF?" << endl;
-  }
 }
 
 double get_primary()
@@ -73,18 +70,40 @@ double get_primary()
   return t.value;
 }
 
-double get_expression()
+double get_term()
 {
+  return get_primary();
   double val = get_primary();
 
   Token t;
   while ((t = get_token())) {
     switch (t.type) {
+    case MUL:
+      val *= get_primary();
+      break;
+    case DIV:
+      val /= get_primary();
+      break;
+    default:
+      throw BadInput();
+    }
+  }
+
+  return val;
+}
+
+double get_expression()
+{
+  double val = get_term();
+
+  Token t;
+  while ((t = get_token())) {
+    switch (t.type) {
     case PLUS:
-      val += get_primary();
+      val += get_term();
       break;
     case MINUS:
-      val -= get_primary();
+      val -= get_term();
       break;
     default:
       throw BadInput();
