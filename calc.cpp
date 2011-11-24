@@ -7,12 +7,13 @@
 #include "parser.h"
 
 using namespace std;
+using namespace Parser;
 
 int main()
 {
   while (true) {
     double d;
-    Parser parser;
+    Parser::Parser parser;
 
     cout << "> ";
     try {
