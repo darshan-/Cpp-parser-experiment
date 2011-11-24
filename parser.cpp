@@ -23,11 +23,11 @@ namespace CalcParser {
   };
 
   class parser : public Parser{
-  public:
+  private:
     string _cur_line;
     unsigned int _cur_offset;
     bool _has_value;
-  private:
+
     double get_double()
     {
       double d;
