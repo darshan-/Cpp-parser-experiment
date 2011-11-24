@@ -3,7 +3,6 @@
 #include <cctype>
 #include <cstdio>
 #include <iostream>
-#include <sstream>
 #include <string>
 
 using namespace std;
@@ -20,7 +19,7 @@ class Quit     {};
 string cur_line;
 unsigned int cur_offset;
 
-enum TokenType {NIL, NUM, PLUS='+', MINUS='-', MUL='*', DIV='/', LPAREN = '(', RPAREN = ')'};
+enum TokenType {NIL, NUM, PLUS='+', MINUS='-', MUL='*', DIV='/', LPAREN='(', RPAREN=')', EXPR_END=';'};
 
 class Token {
 public:
@@ -55,6 +54,7 @@ Token get_token()
 
   switch (c) {
   case '.':
+    // TODO: '1.2.', '1.2.3'
   case '0':
   case '1':
   case '2':
@@ -65,25 +65,38 @@ Token get_token()
   case '7':
   case '8':
   case '9':
-    --cur_offset;
-    t.type = NUM;
-    t.value = get_double();
-    break;
+    {
+      --cur_offset;
+      t.type = NUM;
+      int i;
+      sscanf(cur_line.c_str() + cur_offset, "%lf%n", &(t.value), &i);
+      cur_offset += i;
+      break;
+    }
   case '+':
   case '-':
   case '*':
   case '/':
   case '(':
   case ')':
+  case ';':
     t.type = TokenType(c);
     break;
   default:
     if (isspace(c)) return get_token();
 
     --cur_offset;
-    throw BadInput("Bad character");
+    throw BadInput("Invalid character");
   }
 
+  return t;
+}
+
+Token peek_token()
+{
+  int offset = cur_offset;
+  Token t = get_token();
+  cur_offset = offset;
   return t;
 }
 
@@ -160,24 +173,36 @@ double get_expression()
 int main()
 {
   while (true) {
+    double d;
+    bool have_value=false;
     cout << "> ";
-    try {
-      char c = cin.get();
-      if (c == '\n') continue;
-      cin.putback(c);
 
-      stringbuf sb;
-      cin.get(sb);
-      cin.get(); // pop '\n';
+    try {
+      cur_offset = 0;
+      getline(cin, cur_line);
       if (cin.eof()) throw Quit();
 
-      cur_line = sb.str();
-      cur_offset = 0;
+      if (cur_line.length() == 0) continue;
 
-      double d = get_expression();
-      if (cur_offset != cur_line.length()) throw BadInput("Junk after complete expression");
+      while (cur_offset != cur_line.length()) {
+        Token t = peek_token();;
+        while (t.type == EXPR_END || t.type == NIL){
+          have_value=false;
+          get_token();
+          if (cur_offset == cur_line.length()) break;
+          t = peek_token();
+        }
+        if (cur_offset == cur_line.length()) break;
 
-      cout << d << endl;
+        d = get_expression();
+        have_value = true;
+        if (cur_offset != cur_line.length()) {
+          Token t = peek_token();
+          if (t.type != EXPR_END)
+            throw BadInput("Junk after complete expression");
+          get_token();
+        }
+      }
     } catch (BadInput &e) {
       cout << "Error: " << e.message << endl;
       cout << "~ " << cur_line << endl;
@@ -188,6 +213,8 @@ int main()
       cout << endl;
       return 0;
     }
+
+    if (have_value) cout << d << endl;
   }
 
   return 0;
