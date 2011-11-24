@@ -7,13 +7,13 @@
 #include "parser.h"
 
 using namespace std;
-using namespace Parser;
+using namespace CalcParser;
 
 int main()
 {
+  Parser* parser = new_Parser();
   while (true) {
     double d;
-    Parser::Parser parser;
 
     cout << "> ";
     try {
@@ -21,20 +21,20 @@ int main()
       getline(cin, line);
       if (cin.eof()) throw Quit();
 
-      d = parser.eval(line);
+      d = parser->eval(line);
 
     } catch (BadInput &e) {
       cout << "Error: " << e.message << endl;
-      cout << "~ " << parser.cur_line() << endl;
+      cout << "~ " << parser->cur_line() << endl;
       cout << "~ ";
-      for (unsigned int i=0; i<parser.cur_offset(); ++i) cout << ' ';
+      for (unsigned int i=0; i < parser->cur_offset(); ++i) cout << ' ';
       cout << '^' << endl;
     } catch (Quit &e) {
       cout << endl;
       return 0;
     }
 
-    if (parser.has_value()) cout << d << endl;
+    if (parser->has_value()) cout << d << endl;
   }
 
   return 0;

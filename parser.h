@@ -3,7 +3,7 @@
 
 #include <string>
 
-namespace Parser {
+namespace CalcParser {
   class BadInput {
   public:
     std::string message;
@@ -14,13 +14,12 @@ namespace Parser {
 
   class Parser {
   public:
-    Parser();
-    double eval(std::string line);
-    std::string cur_line();
-    unsigned int cur_offset();
-    bool has_value();
-  private:
-    void* p;
+    virtual double eval(std::string line) = 0;
+    virtual std::string cur_line() = 0;
+    virtual unsigned int cur_offset() = 0;
+    virtual bool has_value() = 0;
   };
+
+  Parser* new_Parser();
 }
 #endif // PARSER_H
