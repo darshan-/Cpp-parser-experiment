@@ -29,6 +29,7 @@ int main()
       cout << "~ ";
       for (unsigned int i=0; i < parser->cur_offset(); ++i) cout << ' ';
       cout << '^' << endl;
+      continue;
     } catch (Quit &e) {
       cout << endl;
       return 0;

@@ -50,7 +50,8 @@ namespace CalcParser {
 
       switch (c) {
       case '.':
-        // TODO: '1.2.', '1.2.3'
+        if (_cur_offset > _cur_line.length() || !isdigit(_cur_line[_cur_offset]))
+          throw BadInput("Incomplete number");
       case '0':
       case '1':
       case '2':
