@@ -7,8 +7,6 @@
 using namespace std;
 
 namespace CalcParser {
-  BadInput::BadInput(string message = "") : message(message) {}
-
   enum TokenType {NIL, NUM, PLUS='+', MINUS='-', MUL='*', DIV='/',
                   LPAREN='(', RPAREN=')', EXPR_END=';'};
 
@@ -52,7 +50,7 @@ namespace CalcParser {
       switch (c) {
       case '.':
         if (_cur_offset > _cur_line.length() || !isdigit(_cur_line[_cur_offset]))
-          throw BadInput("Incomplete number");
+          throw make_BadInput("Incomplete number");
       case '0':
       case '1':
       case '2':
@@ -84,7 +82,7 @@ namespace CalcParser {
         if (isspace(c)) return get_token();
 
         --_cur_offset;
-        throw BadInput("Invalid character");
+        throw make_BadInput("Invalid character");
       }
 
       return t;
@@ -109,7 +107,7 @@ namespace CalcParser {
         {
           double d = get_expression();
           t = get_token();
-          if (t.type != RPAREN) throw BadInput("Right parenthesis ')' expected");
+          if (t.type != RPAREN) throw make_BadInput("Right parenthesis ')' expected");
           return d;
         }
       case PLUS:
@@ -118,7 +116,7 @@ namespace CalcParser {
         return - get_primary();
       default:
         if (t.type != NIL) --_cur_offset;
-        throw BadInput("Primary expected");
+        throw make_BadInput("Primary expected");
       }
     }
 
@@ -171,6 +169,18 @@ namespace CalcParser {
       return (_cur_offset >= _cur_line.length());
     }
 
+    BadInput make_BadInput(string message)
+    {
+      string short_message = "Error: " + message;
+      string long_message = short_message + '\n' +
+        "~ " + _cur_line + '\n' +
+        "~ ";
+      for (unsigned int i=0; i < _cur_offset; ++i) long_message += ' ';
+      long_message += '^';
+
+      return {short_message, long_message};
+    }
+
   public:
     double eval(string line)
     {
@@ -194,7 +204,7 @@ namespace CalcParser {
         if (! done()) {
           Token t = peek_token();
           if (t.type != EXPR_END)
-            throw BadInput("Junk after complete expression");
+            throw make_BadInput("Junk after complete expression");
           get_token();
         }
       }

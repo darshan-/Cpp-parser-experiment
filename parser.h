@@ -5,10 +5,9 @@
 #include <string>
 
 namespace CalcParser {
-  class BadInput {
-  public:
-    std::string message;
-    BadInput(std::string message);
+  struct BadInput {
+    const std::string short_message;
+    const std::string long_message;
   };
 
   class Quit {};

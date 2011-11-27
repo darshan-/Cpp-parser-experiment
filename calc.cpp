@@ -25,11 +25,7 @@ int main()
       d = parser->eval(line);
 
     } catch (BadInput &e) {
-      cout << "Error: " << e.message << endl;
-      cout << "~ " << parser->cur_line() << endl;
-      cout << "~ ";
-      for (unsigned int i=0; i < parser->cur_offset(); ++i) cout << ' ';
-      cout << '^' << endl;
+      cout << e.long_message << endl;
       continue;
     } catch (Quit &e) {
       cout << endl;
