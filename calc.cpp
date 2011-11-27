@@ -2,6 +2,7 @@
 
 #include <cstdio>
 #include <iostream>
+#include <memory>
 #include <string>
 
 #include "parser.h"
@@ -11,7 +12,7 @@ using namespace CalcParser;
 
 int main()
 {
-  Parser* parser = new_Parser();
+  unique_ptr<Parser> parser = new_Parser();
   while (true) {
     double d;
 

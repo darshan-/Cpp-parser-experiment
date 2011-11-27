@@ -1,5 +1,6 @@
 #include <cctype>
 #include <cstdio>
+#include <memory>
 
 #include "parser.h"
 
@@ -206,8 +207,8 @@ namespace CalcParser {
     bool has_value() {return _has_value;}
   };
 
-  Parser* new_Parser()
+  unique_ptr<Parser> new_Parser()
   {
-    return new parser();
+    return unique_ptr<Parser>(new parser);
   }
 }

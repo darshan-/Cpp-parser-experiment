@@ -1,6 +1,7 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#include <memory>
 #include <string>
 
 namespace CalcParser {
@@ -20,6 +21,6 @@ namespace CalcParser {
     virtual bool has_value() = 0;
   };
 
-  Parser* new_Parser();
+  std::unique_ptr<Parser> new_Parser();
 }
 #endif // PARSER_H
