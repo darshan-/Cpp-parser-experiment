@@ -23,16 +23,16 @@ namespace CalcParser {
 
   class parser : public Parser{
   private:
-    string _cur_line;
-    unsigned int _cur_offset;
+    string cur_line;
+    unsigned int cur_offset;
     bool _has_value;
 
     double get_double()
     {
       double d;
       int i;
-      sscanf(_cur_line.c_str() + _cur_offset, "%lf%n", &d, &i);
-      _cur_offset += i;
+      sscanf(cur_line.c_str() + cur_offset, "%lf%n", &d, &i);
+      cur_offset += i;
       return d;
     }
 
@@ -40,16 +40,16 @@ namespace CalcParser {
     {
       Token t;
 
-      if (_cur_offset >= _cur_line.length()) {
+      if (cur_offset >= cur_line.length()) {
         t.type = NIL;
         return t;
       }
 
-      char c = _cur_line[_cur_offset++];
+      char c = cur_line[cur_offset++];
 
       switch (c) {
       case '.':
-        if (_cur_offset > _cur_line.length() || !isdigit(_cur_line[_cur_offset]))
+        if (cur_offset > cur_line.length() || !isdigit(cur_line[cur_offset]))
           throw make_BadInput("Incomplete number");
       case '0':
       case '1':
@@ -62,11 +62,11 @@ namespace CalcParser {
       case '8':
       case '9':
         {
-          --_cur_offset;
+          --cur_offset;
           t.type = NUM;
           int i;
-          sscanf(_cur_line.c_str() + _cur_offset, "%lf%n", &(t.value), &i);
-          _cur_offset += i;
+          sscanf(cur_line.c_str() + cur_offset, "%lf%n", &(t.value), &i);
+          cur_offset += i;
           break;
         }
       case '+':
@@ -81,7 +81,7 @@ namespace CalcParser {
       default:
         if (isspace(c)) return get_token();
 
-        --_cur_offset;
+        --cur_offset;
         throw make_BadInput("Invalid character");
       }
 
@@ -90,9 +90,9 @@ namespace CalcParser {
 
     Token peek_token()
     {
-      int offset = _cur_offset;
+      int offset = cur_offset;
       Token t = get_token();
-      _cur_offset = offset;
+      cur_offset = offset;
       return t;
     }
 
@@ -115,7 +115,7 @@ namespace CalcParser {
       case MINUS:
         return - get_primary();
       default:
-        if (t.type != NIL) --_cur_offset;
+        if (t.type != NIL) --cur_offset;
         throw make_BadInput("Primary expected");
       }
     }
@@ -134,7 +134,7 @@ namespace CalcParser {
           val /= get_primary();
           break;
         default:
-          --_cur_offset;
+          --cur_offset;
           return val;
         }
       }
@@ -156,7 +156,7 @@ namespace CalcParser {
           val -= get_term();
           break;
         default:
-          --_cur_offset;
+          --cur_offset;
           return val;
         }
       }
@@ -166,16 +166,16 @@ namespace CalcParser {
 
     bool done()
     {
-      return (_cur_offset >= _cur_line.length());
+      return (cur_offset >= cur_line.length());
     }
 
     BadInput make_BadInput(string message)
     {
       string short_message = "Error: " + message;
       string long_message = short_message + '\n' +
-        "~ " + _cur_line + '\n' +
+        "~ " + cur_line + '\n' +
         "~ ";
-      for (unsigned int i=0; i < _cur_offset; ++i) long_message += ' ';
+      for (unsigned int i=0; i < cur_offset; ++i) long_message += ' ';
       long_message += '^';
 
       return {short_message, long_message};
@@ -184,8 +184,8 @@ namespace CalcParser {
   public:
     double eval(string line)
     {
-      _cur_line = line;
-      _cur_offset = 0;
+      cur_line = line;
+      cur_offset = 0;
       if (done()) return 0; //TODO
 
       double d;
@@ -212,8 +212,6 @@ namespace CalcParser {
       return d;
     }
 
-    string cur_line() {return _cur_line;}
-    unsigned int cur_offset() {return _cur_offset;}
     bool has_value() {return _has_value;}
   };
 

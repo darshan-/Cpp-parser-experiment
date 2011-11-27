@@ -15,8 +15,6 @@ namespace CalcParser {
   class Parser {
   public:
     virtual double eval(std::string line) = 0;
-    virtual std::string cur_line() = 0;
-    virtual unsigned int cur_offset() = 0;
     virtual bool has_value() = 0;
   };
 
