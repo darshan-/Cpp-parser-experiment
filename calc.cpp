@@ -1,6 +1,9 @@
-// g++ -std=c++0x -Wall *.cpp && ./a.out
+// g++ -std=c++0x -Wall -lreadline *.cpp && ./a.out
 
-#include <cstdio>
+#include <stdio.h>
+#include <readline/readline.h>
+#include <readline/history.h>
+
 #include <iostream>
 #include <memory>
 #include <string>
@@ -16,11 +19,13 @@ int main()
   while (true) {
     double d;
 
-    cout << "> ";
     try {
-      string line;
-      getline(cin, line);
-      if (cin.eof()) throw Quit();
+      char* line_cstr = readline("> ");
+      if (! line_cstr) throw Quit();
+
+      string line(line_cstr);
+      add_history(line_cstr);
+      free(line_cstr);
 
       d = parser->eval(line);
 
