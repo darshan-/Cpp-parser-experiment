@@ -10,8 +10,6 @@ namespace CalculatorParser {
     const std::string long_message;
   };
 
-  class Quit {};
-
   class ParserInterface {
   public:
     virtual double eval(std::string line) = 0;

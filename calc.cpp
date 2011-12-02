@@ -22,7 +22,10 @@ int main()
 
     try {
       char* line_cstr = readline("> ");
-      if (! line_cstr) throw Quit();
+      if (! line_cstr) { /* User sent EOF; quit */
+        cout << endl;
+        return 0;
+      }
 
       std::string line(line_cstr);
       add_history(line_cstr);
@@ -33,9 +36,6 @@ int main()
     } catch (BadInput &e) {
       cout << e.long_message << endl;
       continue;
-    } catch (Quit &e) {
-      cout << endl;
-      return 0;
     }
 
     if (parser->has_value()) cout << d << endl;
