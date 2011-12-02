@@ -4,7 +4,7 @@
 
 #include "parser.h"
 
-using namespace std;
+using std::string;
 
 namespace CalculatorParser {
   enum TokenType {NIL, NUM, PLUS='+', MINUS='-', MUL='*', DIV='/',
@@ -215,8 +215,8 @@ namespace CalculatorParser {
     bool has_value() {return _has_value;}
   };
 
-  unique_ptr<ParserInterface> new_Parser()
+  std::unique_ptr<ParserInterface> new_Parser()
   {
-    return unique_ptr<ParserInterface>(new Parser);
+    return std::unique_ptr<ParserInterface>(new Parser);
   }
 }

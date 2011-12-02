@@ -10,12 +10,13 @@
 
 #include "parser.h"
 
-using namespace std;
+using std::cout;
+using std::endl;
 using namespace CalculatorParser;
 
 int main()
 {
-  unique_ptr<ParserInterface> parser = new_Parser();
+  std::unique_ptr<ParserInterface> parser = new_Parser();
   while (true) {
     double d;
 
@@ -23,7 +24,7 @@ int main()
       char* line_cstr = readline("> ");
       if (! line_cstr) throw Quit();
 
-      string line(line_cstr);
+      std::string line(line_cstr);
       add_history(line_cstr);
       free(line_cstr);
 
