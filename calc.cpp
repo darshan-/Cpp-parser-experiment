@@ -17,11 +17,13 @@ using namespace CalculatorParser;
 int main()
 {
   std::unique_ptr<ParserInterface> parser = new_Parser();
+  const char* prompt = "> ";
+
   while (true) {
     double d;
 
     try {
-      char* line_cstr = readline("> ");
+      char* line_cstr = readline(prompt);
       if (! line_cstr) { /* User sent EOF; quit */
         cout << endl;
         return 0;
@@ -38,7 +40,8 @@ int main()
       continue;
     }
 
-    if (parser->has_value()) cout << d << endl;
+    if (parser->has_value())
+      cout << d << endl;
   }
 
   return 0;

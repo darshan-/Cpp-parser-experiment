@@ -25,7 +25,7 @@ namespace CalculatorParser {
   private:
     string cur_line;
     unsigned int cur_offset;
-    bool _has_value;
+    bool has_value_;
 
     double get_double()
     {
@@ -61,14 +61,10 @@ namespace CalculatorParser {
       case '7':
       case '8':
       case '9':
-        {
           --cur_offset;
           t.type = NUM;
-          int i;
-          sscanf(cur_line.c_str() + cur_offset, "%lf%n", &(t.value), &i);
-          cur_offset += i;
+          t.value = get_double();
           break;
-        }
       case '+':
       case '-':
       case '*':
@@ -79,7 +75,8 @@ namespace CalculatorParser {
         t.type = TokenType(c);
         break;
       default:
-        if (isspace(c)) return get_token();
+        if (isspace(c))
+          return get_token();
 
         --cur_offset;
         throw make_BadInput("Invalid character");
@@ -107,7 +104,9 @@ namespace CalculatorParser {
         {
           double d = get_expression();
           t = get_token();
-          if (t.type != RPAREN) throw make_BadInput("Right parenthesis ')' expected");
+          if (t.type != RPAREN)
+            throw make_BadInput("Right parenthesis ')' expected");
+
           return d;
         }
       case PLUS:
@@ -115,7 +114,9 @@ namespace CalculatorParser {
       case MINUS:
         return - get_primary();
       default:
-        if (t.type != NIL) --cur_offset;
+        if (t.type != NIL)
+          --cur_offset;
+
         throw make_BadInput("Primary expected");
       }
     }
@@ -175,7 +176,8 @@ namespace CalculatorParser {
       string long_message = short_message + '\n' +
         "~ " + cur_line + '\n' +
         "~ ";
-      for (unsigned int i=0; i < cur_offset; ++i) long_message += ' ';
+      for (unsigned int i = 0; i < cur_offset; ++i)
+        long_message += ' ';
       long_message += '^';
 
       return {short_message, long_message};
@@ -186,22 +188,30 @@ namespace CalculatorParser {
     {
       cur_line = line;
       cur_offset = 0;
-      if (done()) return 0; //TODO
+      has_value_=false;
+
+      if (done())
+        return 0; // TODO: return a Value object
 
       double d;
-      while (! done()) {
+      while (!done()) {
         Token t = peek_token();;
         while (t.type == EXPR_END || t.type == NIL){
-          _has_value=false;
+          has_value_=false;
           get_token();
-          if (done()) break;
+
+          if (done())
+            break;
+
           t = peek_token();
         }
+
         if (done()) break;
 
         d = get_expression();
-        _has_value = true;
-        if (! done()) {
+        has_value_ = true;
+
+        if (!done()) {
           Token t = peek_token();
           if (t.type != EXPR_END)
             throw make_BadInput("Junk after complete expression");
@@ -212,7 +222,7 @@ namespace CalculatorParser {
       return d;
     }
 
-    bool has_value() {return _has_value;}
+    bool has_value() {return has_value_;}
   };
 
   std::unique_ptr<ParserInterface> new_Parser()
