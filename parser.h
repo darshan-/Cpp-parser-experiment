@@ -10,10 +10,14 @@ namespace CalculatorParser {
     const std::string long_message;
   };
 
+  struct Value {
+    bool non_empty;
+    double value;
+  };
+
   class ParserInterface {
   public:
-    virtual double eval(std::string line) = 0;
-    virtual bool has_value() = 0;
+    virtual Value eval(std::string line) = 0;
   };
 
   std::unique_ptr<ParserInterface> new_Parser();

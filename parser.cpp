@@ -25,7 +25,6 @@ namespace CalculatorParser {
   private:
     string cur_line;
     unsigned int cur_offset;
-    bool has_value_;
 
     double get_double()
     {
@@ -165,7 +164,7 @@ namespace CalculatorParser {
       return val;
     }
 
-    bool done()
+    inline bool done()
     {
       return (cur_offset >= cur_line.length());
     }
@@ -184,20 +183,21 @@ namespace CalculatorParser {
     }
 
   public:
-    double eval(string line)
+    Value eval(string line)
     {
       cur_line = line;
       cur_offset = 0;
-      has_value_=false;
 
       if (done())
-        return 0; // TODO: return a Value object
+        return {false, 0};
 
-      double d;
+      Value value = {false, 0};
+
       while (!done()) {
         Token t = peek_token();;
+
         while (t.type == EXPR_END || t.type == NIL){
-          has_value_=false;
+          value = {false, 0};
           get_token();
 
           if (done())
@@ -206,10 +206,10 @@ namespace CalculatorParser {
           t = peek_token();
         }
 
-        if (done()) break;
+        if (done())
+          break;
 
-        d = get_expression();
-        has_value_ = true;
+        value = {true, get_expression()};
 
         if (!done()) {
           Token t = peek_token();
@@ -219,10 +219,8 @@ namespace CalculatorParser {
         }
       }
 
-      return d;
+      return value;
     }
-
-    bool has_value() {return has_value_;}
   };
 
   std::unique_ptr<ParserInterface> new_Parser()

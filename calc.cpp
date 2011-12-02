@@ -20,7 +20,7 @@ int main()
   const char* prompt = "> ";
 
   while (true) {
-    double d;
+    Value value;
 
     try {
       char* line_cstr = readline(prompt);
@@ -33,15 +33,14 @@ int main()
       add_history(line_cstr);
       free(line_cstr);
 
-      d = parser->eval(line);
-
-    } catch (BadInput &e) {
+      value = parser->eval(line);
+    } catch (BadInput e) {
       cout << e.long_message << endl;
       continue;
     }
 
-    if (parser->has_value())
-      cout << d << endl;
+    if (value.non_empty)
+      cout << value.value << endl;
   }
 
   return 0;
