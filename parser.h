@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-namespace CalcParser {
+namespace CalculatorParser {
   struct BadInput {
     const std::string short_message;
     const std::string long_message;
@@ -12,12 +12,12 @@ namespace CalcParser {
 
   class Quit {};
 
-  class Parser {
+  class ParserInterface {
   public:
     virtual double eval(std::string line) = 0;
     virtual bool has_value() = 0;
   };
 
-  std::unique_ptr<Parser> new_Parser();
+  std::unique_ptr<ParserInterface> new_Parser();
 }
 #endif // PARSER_H

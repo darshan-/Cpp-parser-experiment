@@ -6,7 +6,7 @@
 
 using namespace std;
 
-namespace CalcParser {
+namespace CalculatorParser {
   enum TokenType {NIL, NUM, PLUS='+', MINUS='-', MUL='*', DIV='/',
                   LPAREN='(', RPAREN=')', EXPR_END=';'};
 
@@ -21,7 +21,7 @@ namespace CalcParser {
     }
   };
 
-  class parser : public Parser{
+  class Parser : public ParserInterface{
   private:
     string cur_line;
     unsigned int cur_offset;
@@ -215,8 +215,8 @@ namespace CalcParser {
     bool has_value() {return _has_value;}
   };
 
-  unique_ptr<Parser> new_Parser()
+  unique_ptr<ParserInterface> new_Parser()
   {
-    return unique_ptr<Parser>(new parser);
+    return unique_ptr<ParserInterface>(new Parser);
   }
 }

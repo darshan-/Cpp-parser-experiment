@@ -1,4 +1,4 @@
-// g++ -std=c++0x -Wall calc.cpp && ./a.out
+// g++ -std=c++0x -Wall *.cpp && ./a.out
 
 #include <cstdio>
 #include <iostream>
@@ -8,11 +8,11 @@
 #include "parser.h"
 
 using namespace std;
-using namespace CalcParser;
+using namespace CalculatorParser;
 
 int main()
 {
-  unique_ptr<Parser> parser = new_Parser();
+  unique_ptr<ParserInterface> parser = new_Parser();
   while (true) {
     double d;
 
