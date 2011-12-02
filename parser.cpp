@@ -21,6 +21,8 @@ namespace CalculatorParser {
     }
   };
 
+  const Value NIL_VALUE = {false, 0};
+
   class Parser : public ParserInterface{
   private:
     string cur_line;
@@ -164,11 +166,6 @@ namespace CalculatorParser {
       return val;
     }
 
-    inline bool done()
-    {
-      return (cur_offset >= cur_line.length());
-    }
-
     BadInput make_BadInput(string message)
     {
       string short_message = "Error: " + message;
@@ -182,22 +179,23 @@ namespace CalculatorParser {
       return {short_message, long_message};
     }
 
+    inline bool done()
+    {
+      return (cur_offset >= cur_line.length());
+    }
+
   public:
     Value eval(string line)
     {
-      cur_line = line;
+      cur_line = line.erase(line.find_last_not_of(" ")+1); // right trim
       cur_offset = 0;
-
-      if (done())
-        return {false, 0};
-
-      Value value = {false, 0};
+      Value value = NIL_VALUE;
 
       while (!done()) {
         Token t = peek_token();;
 
         while (t.type == EXPR_END || t.type == NIL){
-          value = {false, 0};
+          value = NIL_VALUE;
           get_token();
 
           if (done())

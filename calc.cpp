@@ -1,4 +1,4 @@
-// g++ -std=c++0x -Wall -lreadline *.cpp && ./a.out
+// g++ -std=c++0x -Os -Wall -lreadline *.cpp && ./a.out
 
 #include <stdio.h>
 #include <readline/readline.h>
