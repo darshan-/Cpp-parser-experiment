@@ -185,7 +185,7 @@ namespace CalculatorParser {
     }
 
   public:
-    Value eval(string line)
+    Value eval(string line) throw (BadInput)
     {
       cur_line = line.erase(line.find_last_not_of(" ")+1); // right trim
       cur_offset = 0;

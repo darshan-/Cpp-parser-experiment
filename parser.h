@@ -17,7 +17,7 @@ namespace CalculatorParser {
 
   class ParserInterface {
   public:
-    virtual Value eval(std::string line) = 0;
+    virtual Value eval(std::string line) throw (BadInput) = 0;
   };
 
   std::unique_ptr<ParserInterface> new_Parser();
