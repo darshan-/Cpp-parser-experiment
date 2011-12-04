@@ -1,12 +1,11 @@
 #include <cctype>
 #include <cstdio>
-#include <memory>
 
 #include "parser.h"
 
 using std::string;
 
-namespace CalculatorParser {
+namespace Parser {
   enum TokenType {NIL, NUM, PLUS='+', MINUS='-', MUL='*', DIV='/',
                   LPAREN='(', RPAREN=')', EXPR_END=';'};
 
@@ -23,206 +22,199 @@ namespace CalculatorParser {
 
   const Value NIL_VALUE = {false, 0};
 
-  class Parser : public ParserInterface{
-  private:
-    string cur_line;
-    unsigned int cur_offset;
+  string cur_line;
+  unsigned int cur_offset;
 
-    double get_double()
-    {
-      double d;
-      int i;
-      sscanf(cur_line.c_str() + cur_offset, "%lf%n", &d, &i);
-      cur_offset += i;
-      return d;
+  BadInput make_BadInput(string message)
+  {
+    string short_message = "Error: " + message;
+    string long_message = short_message + '\n' +
+      "~ " + cur_line + '\n' +
+      "~ ";
+    for (unsigned int i = 0; i < cur_offset; ++i)
+      long_message += ' ';
+    long_message += '^';
+
+    return {short_message, long_message};
+  }
+
+  double get_double()
+  {
+    double d;
+    int i;
+    sscanf(cur_line.c_str() + cur_offset, "%lf%n", &d, &i);
+    cur_offset += i;
+    return d;
+  }
+
+  Token get_token()
+  {
+    Token t;
+
+    if (cur_offset >= cur_line.length()) {
+      t.type = NIL;
+      return t;
     }
 
-    Token get_token()
-    {
-      Token t;
+    char c = cur_line[cur_offset++];
 
-      if (cur_offset >= cur_line.length()) {
-        t.type = NIL;
-        return t;
+    switch (c) {
+    case '.':
+      if (cur_offset > cur_line.length() || !isdigit(cur_line[cur_offset]))
+        throw make_BadInput("Incomplete number");
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+      --cur_offset;
+      t.type = NUM;
+      t.value = get_double();
+      break;
+    case '+':
+    case '-':
+    case '*':
+    case '/':
+    case '(':
+    case ')':
+    case ';':
+      t.type = TokenType(c);
+      break;
+    default:
+      if (isspace(c))
+        return get_token();
+
+      --cur_offset;
+      throw make_BadInput("Invalid character");
+    }
+
+    return t;
+  }
+
+  Token peek_token()
+  {
+    int offset = cur_offset;
+    Token t = get_token();
+    cur_offset = offset;
+    return t;
+  }
+
+  double get_expression();
+
+  double get_primary()
+  {
+    Token t = get_token();
+
+    switch (t.type) {
+    case NUM:
+      return t.value;
+    case LPAREN:
+      {
+        double d = get_expression();
+        t = get_token();
+        if (t.type != RPAREN)
+          throw make_BadInput("Right parenthesis ')' expected");
+
+        return d;
       }
+    case PLUS:
+      return get_primary();
+    case MINUS:
+      return - get_primary();
+    default:
+      if (t.type != NIL)
+        --cur_offset;
 
-      char c = cur_line[cur_offset++];
+      throw make_BadInput("Primary expected");
+    }
+  }
 
-      switch (c) {
-      case '.':
-        if (cur_offset > cur_line.length() || !isdigit(cur_line[cur_offset]))
-          throw make_BadInput("Incomplete number");
-      case '0':
-      case '1':
-      case '2':
-      case '3':
-      case '4':
-      case '5':
-      case '6':
-      case '7':
-      case '8':
-      case '9':
-          --cur_offset;
-          t.type = NUM;
-          t.value = get_double();
-          break;
-      case '+':
-      case '-':
-      case '*':
-      case '/':
-      case '(':
-      case ')':
-      case ';':
-        t.type = TokenType(c);
+  double get_term()
+  {
+    double val = get_primary();
+
+    Token t;
+    while ((t = get_token())) {
+      switch (t.type) {
+      case MUL:
+        val *= get_primary();
+        break;
+      case DIV:
+        val /= get_primary();
         break;
       default:
-        if (isspace(c))
-          return get_token();
-
         --cur_offset;
-        throw make_BadInput("Invalid character");
+        return val;
       }
-
-      return t;
     }
 
-    Token peek_token()
-    {
-      int offset = cur_offset;
-      Token t = get_token();
-      cur_offset = offset;
-      return t;
-    }
+    return val;
+  }
 
-    double get_primary()
-    {
-      Token t = get_token();
+  double get_expression()
+  {
+    double val = get_term();
 
+    Token t;
+    while ((t = get_token())) {
       switch (t.type) {
-      case NUM:
-        return t.value;
-      case LPAREN:
-        {
-          double d = get_expression();
-          t = get_token();
-          if (t.type != RPAREN)
-            throw make_BadInput("Right parenthesis ')' expected");
-
-          return d;
-        }
       case PLUS:
-        return get_primary();
+        val += get_term();
+        break;
       case MINUS:
-        return - get_primary();
+        val -= get_term();
+        break;
       default:
-        if (t.type != NIL)
-          --cur_offset;
-
-        throw make_BadInput("Primary expected");
+        --cur_offset;
+        return val;
       }
     }
 
-    double get_term()
-    {
-      double val = get_primary();
+    return val;
+  }
 
-      Token t;
-      while ((t = get_token())) {
-        switch (t.type) {
-        case MUL:
-          val *= get_primary();
-          break;
-        case DIV:
-          val /= get_primary();
-          break;
-        default:
-          --cur_offset;
-          return val;
-        }
-      }
+  inline bool done()
+  {
+    return (cur_offset >= cur_line.length());
+  }
 
-      return val;
-    }
+  Value eval(string line) throw (BadInput)
+  {
+    cur_line = line.erase(line.find_last_not_of(" ")+1); // right trim
+    cur_offset = 0;
+    Value value = NIL_VALUE;
 
-    double get_expression()
-    {
-      double val = get_term();
+    while (!done()) {
+      Token t = peek_token();;
 
-      Token t;
-      while ((t = get_token())) {
-        switch (t.type) {
-        case PLUS:
-          val += get_term();
-          break;
-        case MINUS:
-          val -= get_term();
-          break;
-        default:
-          --cur_offset;
-          return val;
-        }
-      }
-
-      return val;
-    }
-
-    BadInput make_BadInput(string message)
-    {
-      string short_message = "Error: " + message;
-      string long_message = short_message + '\n' +
-        "~ " + cur_line + '\n' +
-        "~ ";
-      for (unsigned int i = 0; i < cur_offset; ++i)
-        long_message += ' ';
-      long_message += '^';
-
-      return {short_message, long_message};
-    }
-
-    inline bool done()
-    {
-      return (cur_offset >= cur_line.length());
-    }
-
-  public:
-    Value eval(string line) throw (BadInput)
-    {
-      cur_line = line.erase(line.find_last_not_of(" ")+1); // right trim
-      cur_offset = 0;
-      Value value = NIL_VALUE;
-
-      while (!done()) {
-        Token t = peek_token();;
-
-        while (t.type == EXPR_END || t.type == NIL){
-          value = NIL_VALUE;
-          get_token();
-
-          if (done())
-            break;
-
-          t = peek_token();
-        }
+      while (t.type == EXPR_END || t.type == NIL){
+        value = NIL_VALUE;
+        get_token();
 
         if (done())
           break;
 
-        value = {true, get_expression()};
-
-        if (!done()) {
-          Token t = peek_token();
-          if (t.type != EXPR_END)
-            throw make_BadInput("Junk after complete expression");
-          get_token();
-        }
+        t = peek_token();
       }
 
-      return value;
-    }
-  };
+      if (done())
+        break;
 
-  std::unique_ptr<ParserInterface> new_Parser()
-  {
-    return std::unique_ptr<ParserInterface>(new Parser);
+      value = {true, get_expression()};
+
+      if (!done()) {
+        Token t = peek_token();
+        if (t.type != EXPR_END)
+          throw make_BadInput("Junk after complete expression");
+        get_token();
+      }
+    }
+
+    return value;
   }
 }

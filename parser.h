@@ -1,10 +1,9 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include <memory>
 #include <string>
 
-namespace CalculatorParser {
+namespace Parser {
   struct BadInput {
     const std::string short_message;
     const std::string long_message;
@@ -15,11 +14,6 @@ namespace CalculatorParser {
     double value;
   };
 
-  class ParserInterface {
-  public:
-    virtual Value eval(std::string line) throw (BadInput) = 0;
-  };
-
-  std::unique_ptr<ParserInterface> new_Parser();
+  Value eval(std::string line) throw (BadInput);
 }
 #endif // PARSER_H
